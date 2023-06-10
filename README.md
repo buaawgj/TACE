@@ -1,5 +1,5 @@
 # TACE
-Adaptive trajectory-constrained exploration strategy
+An adaptive TrAjectory-Constrained Exploration strategy
 
 ## Requirements
 Creat the running environment with the following command:
