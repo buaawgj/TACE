@@ -15,7 +15,7 @@ from monitor import Monitor
 
 def train():
     ####### initialize environment hyperparameters ######
-    num_policies = 2                      # the number of agents
+    num_policies = 3                      # the number of agents
 
     has_continuous_action_space = False   # continuous action space; else discrete
 
@@ -29,7 +29,7 @@ def train():
     ################ PPO hyperparameters ################
 
     update_freq = 8                       # update policy every n timesteps
-    K_epochs = 60                         # update policy for K epochs in one PPO update
+    K_epochs = 65                         # update policy for K epochs in one PPO update
 
     eps_clip = 0.2                        # clip parameter for PPO
     gamma = 0.99                          # discount factor
@@ -96,9 +96,10 @@ def train():
             # update PPO agent
             if episode % update_freq == 0:
                 paths = ppo_agent.return_trajs()
-                # plot_visitations(paths, visit_axis_bound=28)
                 loss, mmd_distances = ppo_agent.update(episode)
                 ppo_agent.clear_trajs()
+                
+                # write data
                 env.write_data(epinfos, mmd_distances)
                 
                 # check time interval
