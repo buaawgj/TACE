@@ -53,7 +53,7 @@ def rollout(env, agent, max_path_length=np.inf, test=False):
             print('action: ', a) 
     
         if done:
-            goal = env.which_goal()
+            goal = info["goal_idx"]
             print('goal: ', goal)
             print('state: ', o)
             print('action: ', a)
