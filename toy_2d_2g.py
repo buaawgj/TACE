@@ -11,13 +11,15 @@ import numpy as np
 
 # 目标区域的中心坐标
 goals = [[26, 26],
-         [15, 0],]
+         [15, 0],
+         [0, 15]]
 
 # 目标的奖励值
-goal_reward = [100, 5]
+goal_reward = [100, 5, 8]
 
-# 目标区域的半径
+# 目标区域的半径d
 goal_radii = [[2.5, 2.5],
+              [2.5, 2.5,],
               [2.5, 2.5,],]
 
 # 迷宫的边长
@@ -149,7 +151,9 @@ class Grid(object):
         for goal_i, radius_i in zip(self.goal, self.goal_radius):
             if (abs(np.array(state[0]) - np.array(goal_i[0])) <= radius_i[0]):
                 if (abs(np.array(state[1]) - np.array(goal_i[1])) <= radius_i[1]):
-                    return goal_i         
+                    return goal_i 
+                
+        return None        
                 
     def calc_reward(self, state=None, action=None, next_state=None, **kw):
         """Calculate the reward of each step."""
@@ -172,9 +176,13 @@ class Grid(object):
                    
     def step(self, action, **kwargs):
         """Perform actions in the maze."""
+        info = {}
         self.t += 1
         self.action = action
         reward = self.calc_reward()
         if self._valid_crossing():
             self.state = self.get_next_state(self.state, action)
-        return self.observe(), reward, np.sum(self._in_goal()), {}
+            
+        goal = self.which_goal()
+        info["goal_idx"] = goal
+        return self.observe(), reward, np.sum(self._in_goal()), info
