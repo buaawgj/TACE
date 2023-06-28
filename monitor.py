@@ -35,8 +35,13 @@ class Monitor(Wrapper):
 
     def __init__(
         self, env, max_ep_len, update_freq,
-        allow_early_resets=False, reset_keywords=(), 
-        info_keywords=('aver_return_iter', 'aver_return_smooth', 'success_rate', 'aver_mmd_distance'),
+        allow_early_resets=False, reset_keywords=(),
+        basic_keywords=('r', 'l', 't', 'reward_ctrl', 'goal_idx'), 
+        info_keywords=(
+            'aver_return_iter', 'aver_return_smooth', 'success_rate', 
+            'aver_mmd_distance', 'com',
+            ),
+        extra_keywords=('num_goal_0', 'num_goal_1', 'num_goal_2')
         ):
         Wrapper.__init__(self, env=env)
         self.env = env
@@ -45,7 +50,9 @@ class Monitor(Wrapper):
         self.f_path = os.path.join(self.__class__.PROJECT_ROOT, "data/", folder_name)
         self.results_writer = None
         self.reset_keywords = reset_keywords
+        self.basic_keywords = basic_keywords
         self.info_keywords = info_keywords
+        self.extra_keywords = extra_keywords
         self.max_ep_len = max_ep_len
         self.update_freq = update_freq
         self.allow_early_resets = allow_early_resets
@@ -127,9 +134,13 @@ class Monitor(Wrapper):
             infos['episode'] = epinfo
 
         self.total_steps += 1
+        
         return infos
     
     def write_data(self, epinfos, mmd_distances):
+        num_goal_0 = 0
+        num_goal_1 = 0 
+        num_goal_2 = 0
         for idx, epinfo in enumerate(epinfos):
             self.episode_num += 1
             if mmd_distances:
@@ -143,6 +154,14 @@ class Monitor(Wrapper):
             aver_return_smooth = epinfo["aver_return_smooth"]
             success_rate = epinfo["success_rate"]
             aver_mmd_distance = epinfo["aver_mmd_distance"]
+            goal_idx = epinfo["goal_idx"]
+            
+            if goal_idx == 0:
+                num_goal_0 += 1
+            elif goal_idx == 1:
+                num_goal_1 += 1
+            elif goal_idx == 2:
+                num_goal_2 += 1
             
             perform_info = {}
             if self.episode_num % self.update_freq == 0:
@@ -150,6 +169,9 @@ class Monitor(Wrapper):
                 perform_info["aver_return_smooth"] = aver_return_smooth
                 perform_info["success_rate"] = success_rate
                 perform_info["aver_mmd_distance"] = aver_mmd_distance
+                perform_info["num_goal_0"] = num_goal_0
+                perform_info["num_goal_1"] = num_goal_1
+                perform_info["num_goal_2"] = num_goal_2
                 self.performance_writer.write_row(perform_info)
                 
             self.results_writer.write_row(epinfo)
@@ -174,12 +196,12 @@ class Monitor(Wrapper):
             Monitor.EXT,
             filename,
             header={"t_start": time.time(), "env_id": self.env.spec},
-            extra_keys=self.reset_keywords + self.info_keywords)
+            extra_keys=self.basic_keywords + self.info_keywords)
         self.performance_writer = ResultsWriter(
             Monitor.RECORD,
             filename,
             header={"t_start": time.time(), "env_id": self.env.spec},
-            extra_keys=self.info_keywords)
+            extra_keys=self.info_keywords + self.extra_keywords)
         self.check_results_writer(policy_num)
     
     def configure_output_dir(self, policy_num, d=None):
@@ -247,7 +269,7 @@ class ResultsWriter(object):
             if isinstance(header, dict):
                 header = '# {} \n'.format(json.dumps(header))
             self.f.write(header)
-            self.logger = csv.DictWriter(self.f, fieldnames=('r', 'l', 't')+tuple(extra_keys))
+            self.logger = csv.DictWriter(self.f, fieldnames=tuple(extra_keys))
             self.logger.writeheader()
             self.f.flush()
 
