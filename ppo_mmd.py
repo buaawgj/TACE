@@ -327,8 +327,8 @@ class PPO_mmd:
                         meet_same_goal = True
                         
             # DIPG settings            
-            discrepancy = torch.tensor(discrepancy, dtype=torch.float32).to(device)
-            discrepancy = (discrepancy - discrepancy.mean()) / (discrepancy.std() + 1e-7)
+            # discrepancy = torch.tensor(discrepancy, dtype=torch.float32).to(device)
+            # discrepancy = (discrepancy - discrepancy.mean()) / (discrepancy.std() + 1e-7)
             
             # Constraint field.
             discrepancy[discrepancy > 0.6] = 0.6
