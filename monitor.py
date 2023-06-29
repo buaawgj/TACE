@@ -11,6 +11,8 @@ import os.path as osp
 from gym.core import Wrapper
 from collections import deque
 
+import toy_2d_2g as maze
+
 
 __all__ = ['Monitor', 'get_monitor_files', 'load_results']
 
@@ -154,13 +156,14 @@ class Monitor(Wrapper):
             aver_return_smooth = epinfo["aver_return_smooth"]
             success_rate = epinfo["success_rate"]
             aver_mmd_distance = epinfo["aver_mmd_distance"]
-            goal_idx = epinfo["goal_idx"]
+            goal = epinfo["goal_idx"]
+            print("!!!!!!!goal: ", goal)
             
-            if goal_idx == 0:
+            if goal == maze.goals[0]:
                 num_goal_0 += 1
-            elif goal_idx == 1:
+            elif goal == maze.goals[1]:
                 num_goal_1 += 1
-            elif goal_idx == 2:
+            elif goal == maze.goals[2]:
                 num_goal_2 += 1
             
             perform_info = {}
